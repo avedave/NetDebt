@@ -1,14 +1,21 @@
 package pl.graphdebt.server;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import pl.graphdebt.client.GreetingService;
 import pl.graphdebt.shared.Bill;
-import pl.graphdebt.shared.FieldVerifier;
 import pl.graphdebt.shared.Money;
 import pl.graphdebt.shared.Person;
 import pl.graphdebt.shared.Position;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
+import static com.googlecode.objectify.ObjectifyService.ofy;
 
 /**
  * The server side implementation of the RPC service.
@@ -25,23 +32,25 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 	    }
 
 	public String greetServer(String input) throws IllegalArgumentException {
-		// Verify that the input is valid. 
-		if (!FieldVerifier.isValidName(input)) {
-			// If the input is not valid, throw an IllegalArgumentException back to
-			// the client.
-			throw new IllegalArgumentException(
-					"Name must be at least 4 characters long");
+		String[] parts = input.split(";");
+		int partIdx = 0;
+
+		final String billName = parts[partIdx++];
+		List<Position> billPos = new ArrayList<Position>();
+		while (partIdx < parts.length) {
+			String[] posParts = parts[partIdx++].split("=", 2);
+			Position pos = new Position();
+			pos.setName(posParts[0]);
+			pos.setAmount(Double.valueOf(posParts[1]));
+			billPos.add(pos);
 		}
-
-		String serverInfo = getServletContext().getServerInfo();
-		String userAgent = getThreadLocalRequest().getHeader("User-Agent");
-
-		// Escape data from the client to avoid cross-site script vulnerabilities.
-		input = escapeHtml(input);
-		userAgent = escapeHtml(userAgent);
-
-		return "Hello, " + input + "!<br><br>I am running " + serverInfo
-				+ ".<br><br>It looks like you are using:<br>" + userAgent;
+		
+		Map<Key<Position>, Position> billSavedPos = ofy().save().entities(billPos).now();
+		Bill bill = new Bill();
+		bill.setName(billName);
+		bill.setPositions(new ArrayList<Key<Position>>(billSavedPos.keySet()));
+		ofy().save().entity(bill).now();
+		return "" + bill.getId().toString();
 	}
 
 	/**

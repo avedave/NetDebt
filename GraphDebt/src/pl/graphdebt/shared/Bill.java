@@ -10,6 +10,7 @@ import com.googlecode.objectify.annotation.Id;
 @Entity
 public class Bill {
     @Id Long id;
+    private String name;
     List<Key<Position>> positions = new ArrayList<Key<Position>>();
 	public List<Key<Position>> getPositions() {
 		return positions;
@@ -19,6 +20,12 @@ public class Bill {
 	}
 	public Long getId() {
 		return id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
     
     
