@@ -1,8 +1,14 @@
 package pl.graphdebt.server;
 
 import pl.graphdebt.client.GreetingService;
+import pl.graphdebt.shared.Bill;
 import pl.graphdebt.shared.FieldVerifier;
+import pl.graphdebt.shared.Money;
+import pl.graphdebt.shared.Person;
+import pl.graphdebt.shared.Position;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.googlecode.objectify.ObjectifyService;
 
 /**
  * The server side implementation of the RPC service.
@@ -10,6 +16,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 @SuppressWarnings("serial")
 public class GreetingServiceImpl extends RemoteServiceServlet implements
 		GreetingService {
+	
+	   static {
+	        ObjectifyService.register(Bill.class);
+	        ObjectifyService.register(Money.class);
+	        ObjectifyService.register(Person.class);
+	        ObjectifyService.register(Position.class);
+	    }
 
 	public String greetServer(String input) throws IllegalArgumentException {
 		// Verify that the input is valid. 
